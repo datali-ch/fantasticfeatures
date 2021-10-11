@@ -6,10 +6,12 @@ authors = ["Teresa Kubacka <teresakubacka@gmail.com>, Magdalena Surowka <magdale
 
 [tool.poetry.dependencies]
 python = "^3.7.12"
-scikit-learn = "0.22.2.post1"
 statsmodels = "0.10.2"
 matplotlib = "3.2.2"
 ipykernel = "^6.4.1"
+sklearn = "^0.0"
+sklearn-pandas = "1.8.0"
+scikit-learn = "0.22.2.post1"
 
 [tool.poetry.dev-dependencies]
 black = "^21.9b0"
