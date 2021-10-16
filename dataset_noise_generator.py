@@ -21,7 +21,10 @@ def gen_noise(input_X,noise_coeff,noise_type='normal', seed=99, **kw_opts):
         noise = noise_coeff*np.tile(np.sin(samples), (shape[1],1)).T
     elif noise_type=='linear_inc': 
         samples = np.linspace(0, shape[0], num=shape[0], endpoint=False)
-        noise = noise_coeff*np.tile(samples/shape[0], (shape[1],1)).T
+        try: 
+            noise = noise_coeff*np.tile(samples/shape[0], (shape[1],1)).T
+        except: 
+            noise = noise_coeff*(samples/shape[0])
     elif noise_type=='population_weights':
         noise = choices(population=kw_opts['population'], weights=kw_opts['weights'],k=shape[0])
     elif noise_type=='lambda': 
