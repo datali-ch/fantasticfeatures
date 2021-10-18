@@ -1,6 +1,6 @@
 import numpy as np
 
-def gen_noise(input_X,noise_coeff,noise_type='normal', seed=99, **kw_opts): 
+def gen_noise(input_X,noise_coeff,noise_type='normal', seed=99, clean_nan=True, **kw_opts): 
 #     TODO: noise_coeff as a vector -> different for each channel
 
     from random import choices 
@@ -9,27 +9,53 @@ def gen_noise(input_X,noise_coeff,noise_type='normal', seed=99, **kw_opts):
     shape = input_X.shape
     if noise_type=='normal':
         noise = np.random.normal(0,noise_coeff,shape)
+    elif noise_type=='normal_prop':
+        f = lambda x: np.random.normal(0,np.abs(x),shape)
+        noise = noise_coeff*f(input_X)
     elif noise_type=='poisson':
-        noise = np.random.poisson(lam=input_X,size=None)
+        noise = np.random.poisson(lam=np.abs(input_X),size=None)
     elif noise_type=='sin':
         try: 
             n_pi = kw_opts['n_osc']*2
-#             print(n_pi)
         except:
             n_pi = 2 
         samples = np.linspace(0, n_pi*np.pi, num=shape[0], endpoint=False)
         noise = noise_coeff*np.tile(np.sin(samples), (shape[1],1)).T
     elif noise_type=='linear_inc': 
         samples = np.linspace(0, shape[0], num=shape[0], endpoint=False)
-        try: 
+        if len(shape)>1: 
             noise = noise_coeff*np.tile(samples/shape[0], (shape[1],1)).T
-        except: 
+        else: 
             noise = noise_coeff*(samples/shape[0])
     elif noise_type=='population_weights':
         noise = choices(population=kw_opts['population'], weights=kw_opts['weights'],k=shape[0])
+    elif noise_type=='linear_inc_index': 
+
+        ind = np.argsort(input_X)
+        ind_rev = np.argsort(ind)
+        input_X_sort = np.sort(input_X)
+        errors_sort = gen_noise(input_X_sort,noise_coeff,'linear_inc',seed=seed)
+        if 'func' in kw_opts.keys(): 
+            errors_sort = kw_opts['func'](errors_sort)
+        noise = errors_sort[ind_rev]
+    elif noise_type=='linear_prop':
+        plusminus = gen_noise(input_X,1,noise_type="population_weights",population=[-1,1], weights=[50,50])
+        if 'func' in kw_opts.keys(): 
+            noise = np.multiply(plusminus,kw_opts['func'](input_X))
+        else: 
+            noise = np.multiply(plusminus,input_X)
+        noise = noise/noise.max()
+        noise = noise_coeff*noise
     elif noise_type=='lambda': 
         noise = kw_opts['func'](**kw_opts['func_args'])
-    return noise
+        
+    rem_nan = lambda x: np.nan_to_num(x, nan=np.random.normal(0,1), posinf=np.random.normal(0,1), neginf=np.random.normal(0,1))
+    if clean_nan: 
+        noise = np.vectorize(rem_nan)(noise)
+    return noise    
+
+
+
 
 def theoretical_function_linear(X, coeffs, y_noise_coeff, noise_type='normal'):
     noise_y = gen_noise(X[:,0],[y_noise_coeff],noise_type)
