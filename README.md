@@ -20,3 +20,5 @@ The Bible:
 ETH course on "Applied Statistical Regression"
 [Diagnostic examples](https://polybox.ethz.ch/index.php/s/eFKWZxXIsJ4uA7O)
 [Diagnostic examples - mortality data](https://polybox.ethz.ch/index.php/s/Ti5XUvKdjc3Zr6j)
+
+[ETH Course Statistical modelling](https://stat.ethz.ch/lectures/as19/stat-modelling.php#course_materials) - with code in R
