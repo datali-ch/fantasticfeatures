@@ -1,0 +1,74 @@
+# Based on script by Emilija Perkovic
+
+# Transformations
+```{r}
+library(alr4)
+
+  ## data provided gives the average body weight in kilograms and
+  ## the average brain weight in grams for sixty-two species of mammals
+
+## first fit a simple linear regression of BrainWt ~ BodyWt
+fit.brain <- lm(BrainWt ~ BodyWt, data=brains)
+
+## the residual plots are not convincing
+png(file="r/07a_transformations/1.png",width=600, height=350)
+par(mfrow=c(1,2))
+plot(resid(fit.brain)~brains$BodyWt,
+     main= "Residuals of BrainWt ~ BodyWt vs. BodyWt")
+plot(fit.brain,which=1)
+dev.off()
+
+## data comes from a right-skewed distribution
+png(file="r/07a_transformations/2.png",width=600, height=350)
+par(mfrow=c(1,3))
+hist(brains$BodyWt)
+hist(brains$BrainWt)
+plot(BrainWt~BodyWt,data=brains,
+     main="Brain Weight vs Body Weight")
+dev.off()
+
+## the skeweness of the data is obvious
+png(file="r/07a_transformations/3.png",width=600, height=350)
+par(mfrow=c(1,1))
+plot(BrainWt~BodyWt,data=brains,
+     main="Brain Weight vs Body Weight")
+  ## uneven distribution of points hides any useful visual information
+  ## about the mean of BrainWt, given BodyWt;
+  ## there is little or no evidence for a straight-line
+  ## mean function here. Both variables range over several
+  ## orders of magnitude from tiny species with body weights
+  ## of just a few grams to huge animals of over 6600 kg.
+  ## Transformations can help in this problem.
+dev.off()
+## which relationship appears the 'most' linear?
+
+png(file="r/07a_transformations/4.png",width=600, height=350)
+par(mfrow=c(2,2))
+plot((1/brains$BodyWt),(1/brains$BrainWt),
+     xlab="1/BodyWt", ylab="1/BrainWt")
+plot(sqrt(brains$BodyWt),sqrt(brains$BrainWt),
+     xlab="sqrt(BodyWt)", ylab="sqrt(BrainWt)")
+plot(brains$BodyWt^(1/3),brains$BrainWt^(1/3),
+     xlab="(BodyWt)^(1/3)", ylab="(BrainWt)^(1/3)")
+plot(log(brains$BodyWt),log(brains$BrainWt),
+     xlab="log(BodyWt)", ylab="log(BrainWt)")
+dev.off()
+  ## here, we apply the same transformation to both variables
+  ## not necessary but reasonable here because both
+  ## variables are the same type of measurements (weight)
+  ## if we allowed each variable to have its own transformation
+  ## parameter, visual search for a transformation
+  ## would be harder
+
+  ## clear choice is replacing the weights by their logarithms
+  ## in this scale, the mean function appears to be a straight line
+
+## check model and diagnostics
+fit.brain_log <- lm(log(BrainWt) ~ log(BodyWt), data=brains)
+
+## the residual plots look much better
+png(file="r/07a_transformations/5.png",width=600, height=350)
+par(mfrow=c(2,2))
+plot(fit.brain_log)
+dev.off()
+```
