@@ -1,19 +1,35 @@
 import numpy as np
+import random 
 
 def gen_noise(input_X,noise_coeff,noise_type='normal', seed=99, clean_nan=True, **kw_opts): 
 #     TODO: noise_coeff as a vector -> different for each channel
 
-    from random import choices 
+    
     
     np.random.seed(seed)
     shape = input_X.shape
+    
+    if len(shape)==1:
+        shape = (shape[0],1) 
+    
     if noise_type=='normal':
-        noise = np.random.normal(0,noise_coeff,shape)
+        if 'loc' not in kw_opts.keys():
+            loc = 0
+        else:
+            loc = kw_opts['loc']
+        noise = np.random.normal(loc,noise_coeff,shape)
+
     elif noise_type=='normal_prop':
-        f = lambda x: np.random.normal(0,np.abs(x),shape)
+        if 'loc' not in kw_opts.keys():
+            loc = 0
+        else:
+            loc = kw_opts['loc']
+        f = lambda x: np.random.normal(loc,np.abs(x.reshape(shape)),shape)
         noise = noise_coeff*f(input_X)
+
     elif noise_type=='poisson':
         noise = np.random.poisson(lam=np.abs(input_X),size=None)
+        
     elif noise_type=='sin':
         try: 
             n_pi = kw_opts['n_osc']*2
@@ -21,23 +37,40 @@ def gen_noise(input_X,noise_coeff,noise_type='normal', seed=99, clean_nan=True, 
             n_pi = 2 
         samples = np.linspace(0, n_pi*np.pi, num=shape[0], endpoint=False)
         noise = noise_coeff*np.tile(np.sin(samples), (shape[1],1)).T
+        
+    elif noise_type=='sin_index': 
+        try: 
+            n_pi = kw_opts['n_osc']*2
+        except:
+            n_pi = 2 
+        ind = np.argsort(input_X)
+        ind_rev = np.argsort(ind)
+        input_X_sort = np.sort(input_X)
+        errors_sort = gen_noise(input_X_sort,noise_coeff,'sin',seed=seed,n_osc=n_pi)
+        if 'func' in kw_opts.keys(): # apply transformation to the linearly generated errors 
+            errors_sort = kw_opts['func'](errors_sort)
+        noise = errors_sort[ind_rev]
+        
     elif noise_type=='linear_inc': 
         samples = np.linspace(0, shape[0], num=shape[0], endpoint=False)
         if len(shape)>1: 
             noise = noise_coeff*np.tile(samples/shape[0], (shape[1],1)).T
         else: 
             noise = noise_coeff*(samples/shape[0])
+            
     elif noise_type=='population_weights':
-        noise = choices(population=kw_opts['population'], weights=kw_opts['weights'],k=shape[0])
+        random.seed(seed)
+        noise = random.choices(population=kw_opts['population'], weights=kw_opts['weights'],k=shape[0])
+        
     elif noise_type=='linear_inc_index': 
-
         ind = np.argsort(input_X)
         ind_rev = np.argsort(ind)
         input_X_sort = np.sort(input_X)
         errors_sort = gen_noise(input_X_sort,noise_coeff,'linear_inc',seed=seed)
-        if 'func' in kw_opts.keys(): 
+        if 'func' in kw_opts.keys(): # apply transformation to the linearly generated errors 
             errors_sort = kw_opts['func'](errors_sort)
         noise = errors_sort[ind_rev]
+        
     elif noise_type=='linear_prop':
         plusminus = gen_noise(input_X,1,noise_type="population_weights",population=[-1,1], weights=[50,50])
         if 'func' in kw_opts.keys(): 
@@ -46,20 +79,44 @@ def gen_noise(input_X,noise_coeff,noise_type='normal', seed=99, clean_nan=True, 
             noise = np.multiply(plusminus,input_X)
         noise = noise/noise.max()
         noise = noise_coeff*noise
+        
+    elif noise_type=='cauchy': 
+        # cauchy will generate some heavy outliers if not truncated
+        s = np.random.standard_cauchy(size=shape[0])
+        if 'truncate' in kw_opts.keys(): 
+            truncate = kw_opts['truncate']
+            s_ind = np.ones(s.shape)
+            while s_ind.sum() > 0:
+                print(s_ind.sum())
+                s_ind = (s<-truncate) | (s>truncate)
+                s[s_ind] = np.random.standard_cauchy(s_ind.sum())
+        noise = s 
+    
+    elif noise_type=='uniform':         
+        if 'low' not in kw_opts.keys():
+            low = 0
+        else: 
+            low = kw_opts['low']            
+        if 'high' not in kw_opts.keys():
+            high = 1
+        else: 
+            high = kw_opts['high']            
+        noise = np.random.uniform(low=low, high=high, size=shape)
+    
     elif noise_type=='lambda': 
         noise = kw_opts['func'](**kw_opts['func_args'])
         
     rem_nan = lambda x: np.nan_to_num(x, nan=np.random.normal(0,1), posinf=np.random.normal(0,1), neginf=np.random.normal(0,1))
     if clean_nan: 
         noise = np.vectorize(rem_nan)(noise)
-    return noise    
+    return np.squeeze(noise)    
 
 
 
 
-def theoretical_function_linear(X, coeffs, y_noise_coeff, noise_type='normal'):
-    noise_y = gen_noise(X[:,0],[y_noise_coeff],noise_type)
-    Y_base = (X*coeffs).sum(axis=1)
+def theoretical_function_linear(X, coeffs, bias=0, y_noise_coeff=0, noise_type='normal', noise_args={}):
+    noise_y = gen_noise(X[:,0],[y_noise_coeff],noise_type,**noise_args)
+    Y_base = (X*coeffs).sum(axis=1)+bias
     print('mean abs Y: ',(np.abs(Y_base)).mean())
     print('mean abs noise: ',(np.abs(noise_y)).mean())
     print('mean SNR: ',(np.abs(Y_base/noise_y)).mean())
