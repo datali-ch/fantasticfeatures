@@ -1,0 +1,75 @@
+```{r}
+require(randomForest)
+require(RPtests)
+
+set.seed(4)
+
+n <- 200
+## data
+x <- rnorm(n)
+eps <- rnorm(n, sd = 0.25)
+
+### true model is
+y <- sin(x) + x + eps
+plot(x, y)
+
+### estimated model is linear
+fit_1 <- lm(y ~ x)
+summary(fit_1)
+
+### use Residual Prediction test to assess model
+### misspecification
+
+### get scaled residuals and hat matrix
+raw_resid_fit1 <- resid(fit_1)
+sc_resid_fit1 <- raw_resid_fit1/c(sqrt(raw_resid_fit1%*%raw_resid_fit1))
+mm_fit1 <- model.matrix(fit_1)
+hat_mat <- mm_fit1%*%solve(t(mm_fit1)%*%mm_fit1)%*%t(mm_fit1)
+
+### alternative: true model is nonlinear
+x_df <- data.frame(x)
+rf <- randomForest(x = x_df, y = sc_resid_fit1)
+pred <- rf$predicted
+  ### predicted values of the input data
+  ### based on out-of-bag samples
+
+### get mse for observed residuals
+mse_obs <- mean((pred-sc_resid_fit1)^2)
+  ### under the null mse_obs should be large:
+  ### we expect scaled residuals
+  ### to not contain any signal,
+  ### so we should not be able to achieve
+  ### a low prediction error;
+  ### under the alternative we expect mse_obs
+  ### to be smaller: can achieve low prediction
+  ### error when signal is left in residuals
+
+nsim <- 100
+mse_sim <- numeric(nsim)
+
+for(i in 1:nsim){
+  ### simulate residuals under the null
+  resid_sim <- (diag(n) - hat_mat)%*%rnorm(n)
+  sc_resid_sim <- resid_sim/c(sqrt(t(resid_sim)%*%resid_sim))
+  ### predict residuals using x
+  rf <- randomForest(x = x_df, y = c(sc_resid_sim))
+  ### compute mse
+  mse_sim[i] <- mean((rf$predicted-resid_sim)^2)
+}
+
+### how does the mse based on the observed data
+### compare to the mse values obtained through
+### simulation
+pvalue <- (sum(mse_sim <= mse_obs)+1)/(nsim+1)
+pvalue
+
+### use function from package RPtests
+out <- RPtest(x = matrix(x),
+              y = y,
+              resid_type = "OLS",
+              B = nsim,
+              resid_only = FALSE,
+              output_all = TRUE,
+              verbose = verbose)
+out$`p-value`
+```

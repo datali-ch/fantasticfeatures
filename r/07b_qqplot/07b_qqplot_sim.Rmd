@@ -1,0 +1,109 @@
+```{r}
+library(truncnorm)
+
+# QQ plot simulations
+
+set.seed(1)
+## data from a normally distributed RV
+png(file="r/07b_qqplot/1.png",width=600, height=350)
+par(mfrow=c(2,3))
+sample_sizes <- rep(c(20, 100, 1000), times = 2)
+for(n in sample_sizes){
+  x <- rnorm(n)
+  qqnorm(x, main = paste("Normal Q-Q plot with sample size:", n))
+  qqline(x, col = "blue")
+}
+dev.off()
+  ## plot two samples of same size each
+  ## for small sample sizes might be hard to
+  ## decide whether plot indicates violation
+  ## of normality assumption
+
+
+png(file="r/07b_qqplot/2.png",width=600, height=350)
+## QQ plot + corresponding histogram
+par(mfrow=c(1,2))
+n <- 1000
+x <- rnorm(n)
+qqnorm(x, main = paste("Normal Q-Q plot with sample size:", n))
+qqline(x, col = "blue")
+hist(x, breaks = 30, xlab = "", ylab = "",  yaxt='n', freq = FALSE,
+     main = paste("Data from normal distribution with n=", n),
+     xlim = c(-4, 4))
+## add normal density to plots below
+normal_density <- dnorm(seq(-4, 4, 0.01))
+zs <- seq(-4, 4, 0.01)
+lines(zs, normal_density, type = "l", col = "red", lwd = 2)
+dev.off()
+
+## Different distributions + QQ plots
+png(file="r/07b_qqplot/3.png",width=600, height=350)
+par(mfrow=c(1,2))
+n <- 1000
+## heavy-tailed distribution
+heavy_tails <- rt(n, df = 5)
+hist(heavy_tails, breaks = 30, xlab = "", ylab = "",  yaxt='n', freq = FALSE,
+     main = "Histogram of heavy-tailed distribution", xlim = c(-6, 6))
+lines(zs, normal_density, type = "l", col = "red", lwd = 2)
+qqnorm(heavy_tails, main = "Heavy-tailed distribution")
+qqline(heavy_tails, col = "blue")
+dev.off()
+
+## short-tailed distribution
+png(file="r/07b_qqplot/4.png",width=600, height=350)
+par(mfrow=c(1,2))
+short_tails <- rtruncnorm(n, a = -2, b = 2)
+hist(short_tails, breaks = 30, xlab = "", ylab = "",  yaxt='n', freq = FALSE,
+     main = "Histogram of short-tailed distribution", xlim = c(-6, 6))
+lines(zs, normal_density, type = "l", col = "red", lwd = 2)
+qqnorm(short_tails, main = "Short-tailed distribution")
+qqline(short_tails, col = "blue")
+dev.off()
+
+## skewed distributions
+### skewed to the right
+png(file="r/07b_qqplot/5.png",width=600, height=350)
+par(mfrow=c(1,2))
+x <- rnorm(n)
+skew_r <- c(x[x > 0] * 2.5, x)
+hist(skew_r, breaks = 30, xlab = "", ylab = "",  yaxt='n', freq = FALSE,
+     main = "Histogram of right-skewed distribution", xlim = c(-6, 6))
+lines(zs, normal_density, type = "l", col = "red", lwd = 2)
+qqnorm(skew_r, main = "Right-skewed distribution")
+qqline(skew_r, col = "blue")
+dev.off()
+
+### skewed to the left
+png(file="r/07b_qqplot/6.png",width=600, height=350)
+par(mfrow=c(1,2))
+skew_l <- c(x[x < 0]*2.5, x)
+hist(skew_l, breaks = 30, xlab = "", ylab = "",  yaxt='n', freq = FALSE,
+     main = "Histogram of left-skewed distribution", xlim = c(-6, 6))
+lines(zs, normal_density, type = "l", col = "red", lwd = 2)
+qqnorm(skew_l, main = "Left-skewed distribution")
+qqline(skew_l, col = "blue")
+dev.off()
+
+## outliers
+png(file="r/07b_qqplot/7.png",width=600, height=350)
+par(mfrow=c(1,2))
+gauss_with_outliers <- c(rnorm(9*n/10), rt(n/10, df = 1))
+hist(gauss_with_outliers, breaks = 30, xlab = "", ylab = "",yaxt='n',
+     freq = FALSE,main = "Histogram of distribution with outliers")
+lines(zs, normal_density, type = "l", col = "red", lwd = 2)
+
+qqnorm(gauss_with_outliers, main = "Distribution with outliers")
+qqline(gauss_with_outliers, col = "blue")
+dev.off()
+
+## bimodal distribution
+png(file="r/07b_qqplot/8.png",width=600, height=350)
+par(mfrow=c(1,2))
+bimodal <- c(rnorm(n, -1, .25), rnorm(n, 1, .25))
+hist(bimodal, breaks = 30, xlab = "", ylab = "",  yaxt='n', freq = FALSE,
+     main = "Histogram of bimodal distribution")
+lines(zs, normal_density, type = "l", col = "red", lwd = 2)
+qqnorm(bimodal, main = "Bimodal distribution")
+qqline(bimodal, col = "blue")
+dev.off()
+```

@@ -1,0 +1,43 @@
+# Based on script by Emilija Perkovic
+
+
+
+## Brains example
+### first fit a simple linear regression, using log(BodyWt)
+### as covariate
+```{r}
+library(MASS)
+library(alr4)
+write.csv(brains, "r/07a_boxcox/brains.csv", row.names=TRUE)
+
+png(file="r/07a_boxcox/1.png",width=600, height=350)
+par(mfrow=c(1,2))
+plot(log(brains$BodyWt), brains$BrainWt,
+     xlab="log(BodyWt)", ylab="BrainWt")
+fit_brain1 <- lm(BrainWt~log(BodyWt), data=brains)
+plot(fit_brain1, which = 1)
+dev.off()
+```
+  ### unsurprisingly, model does not fit well
+
+### use boxcox() to find suitable transformation of response
+```{r}
+png(file="r/07a_boxcox/2.png",width=600, height=350)
+par(mfrow=c(1,1))
+bc <- boxcox(fit_brain1)
+bc$x[which.max(bc$y)]
+title(main = "95% CI for the Box-Cox transform.")
+dev.off()
+  ### log transform of response
+  ### within confidence interval
+
+### fit model with transformed response
+fit_brain2 <- lm(log(BrainWt)~log(BodyWt), data=brains)
+png(file="r/07a_boxcox/3.png",width=600, height=350)
+par(mfrow=c(1,2))
+plot(log(brains$BodyWt),log(brains$BrainWt),
+     xlab="log(BodyWt)", ylab="log(BrainWt)")
+plot(fit_brain2, which = 1)
+dev.off()
+```
+  ### residual plot looks much better
