@@ -239,7 +239,7 @@ def train_xy(X, y, th_prop=0.8):
 def draw_dashboard(
     X_train, y_train, fitted, variances_width=100, variances_bin_type="window"
 ):
-    residuals_raw = fitted - y_train
+    residuals_raw = y_train - fitted
     residuals = residuals_raw / np.std(residuals_raw)
     print("Expected error estimate: {}".format(sum(residuals) / len(residuals)))
     error_estimate = sum(residuals) / len(residuals)
