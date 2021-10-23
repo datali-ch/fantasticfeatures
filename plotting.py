@@ -321,14 +321,16 @@ def train_and_diagnose(
     ),
 ):
     X_train, y_train, model, fitted = train_xy(X, y, **train_args)
+    residuals = y_train - fitted
+    residuals_scaled = residuals / np.std(residuals)
     if plot_diagnostics:
         draw_dashboard(X_train, y_train, fitted, **draw_args)
     if plot_variables:
         plot_multiple_x_vs_y(
             X_train,
-            y_train,
+            residuals,
             "Independent variable",
-            "Dependent variable",
+            "Residuals",
             model=model,
             **xy_plot_args
         )
