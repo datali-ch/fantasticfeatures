@@ -90,7 +90,7 @@ def gen_noise(input_X,noise_coeff,noise_type='normal', seed=99, clean_nan=True, 
                 print(s_ind.sum())
                 s_ind = (s<-truncate) | (s>truncate)
                 s[s_ind] = np.random.standard_cauchy(s_ind.sum())
-        noise = s 
+        noise = noise_coeff*s 
     
     elif noise_type=='uniform':         
         if 'low' not in kw_opts.keys():

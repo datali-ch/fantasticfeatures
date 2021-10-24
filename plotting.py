@@ -130,9 +130,10 @@ def plot_fitted_vs_residuals(
     width=100,
     bin_type=None,
     ax=None,
+    hexbin=False
 ) -> None:
 
-    ax = plot_x_vs_y(fitted, residuals, "Fitted", "Residuals", ax=ax)
+    ax = plot_x_vs_y(fitted, residuals, "Fitted", "Residuals", ax=ax, hexbin=hexbin)
 
     if mean:
         ax.hlines(0, xmin=min(fitted), xmax=max(fitted), colors="orange")
@@ -237,7 +238,7 @@ def train_xy(X, y, th_prop=0.8):
 
 
 def draw_dashboard(
-    X_train, y_train, fitted, variances_width=100, variances_bin_type="window"
+    X_train, y_train, fitted, variances_width=100, variances_bin_type="points", hexbin=False
 ):
     residuals_raw = y_train - fitted
     residuals = residuals_raw / np.std(residuals_raw)
@@ -261,6 +262,7 @@ def draw_dashboard(
         add_zero_line=True,
         add_lowess=True,
         ax=this_ax,
+        hexbin=hexbin
     )
     this_ax.set_title("residuals_raw vs fit")
     xs = this_ax.get_xlim()
@@ -274,6 +276,7 @@ def draw_dashboard(
         width=variances_width,
         bin_type=variances_bin_type,
         ax=this_ax,
+        hexbin=hexbin
     )
     resid_xlim = this_ax.get_xlim()
 
@@ -313,11 +316,12 @@ def train_and_diagnose(
     X,
     y,
     plot_diagnostics=True,
-    plot_variables=True,
+    plot_variables=False,
+    plot_variables_vs_residuals=True,
     train_args={},
     draw_args={},
     xy_plot_args=dict(
-        add_regression_line=True, hexbin=False, n_col=4, plot_args={"s": 20}
+        hexbin=False, n_col=4, plot_args={"s": 20}
     ),
 ):
     X_train, y_train, model, fitted = train_xy(X, y, **train_args)
@@ -328,10 +332,21 @@ def train_and_diagnose(
     if plot_variables:
         plot_multiple_x_vs_y(
             X_train,
+            y_train,
+            "Independent variable",
+            "Dependent variable",
+            model=model,
+            add_regression_line=True,
+            **xy_plot_args
+        )
+    if plot_variables_vs_residuals:
+        plot_multiple_x_vs_y(
+            X_train,
             residuals,
             "Independent variable",
             "Residuals",
-            model=model,
+            add_regression_line=False, 
+            model=None,
             **xy_plot_args
         )
     return X_train, y_train, model, fitted
