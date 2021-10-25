@@ -22,3 +22,5 @@ ETH course on "Applied Statistical Regression"
 [Diagnostic examples - mortality data](https://polybox.ethz.ch/index.php/s/Ti5XUvKdjc3Zr6j)
 
 [ETH Course Statistical modelling](https://stat.ethz.ch/lectures/as19/stat-modelling.php#course_materials) - with code in R
+
+[Books by Julian Faraway](https://julianfaraway.github.io/faraway/PRA/) - also with exercises in Python [1](https://github.com/julianfaraway/LMP) [2](https://julianfaraway.github.io/faraway/LMR/python/) 
