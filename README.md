@@ -1,5 +1,12 @@
-# fantastic-features
-Statistical Feature Engineering
+# fantasticfeatures
+
+Back to the Feature: Statistical Feature Engineering
+
+by [Teresa Kubacka](http://teresa-kubacka.com/), [Magdalena Surówka](https://datali.ch)
+
+AMLD 2021, 26.10.2021
+
+# Additional resources: 
 
 ## Datasets:
 
