@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "Fantastic features"
+name = "fantasticfeatures"
 version = "0.1.0"
 description = "Statistical feature engineering"
-authors = ["Teresa Kubacka <teresakubacka@gmail.com>, Magdalena Surowka <magdalena@surowka.ch>"]
+authors = ["Teresa Kubacka <teresakubacka@gmail.com>, Magdalena Surowka <magdalena@datali.ch>"]
 
 [tool.poetry.dependencies]
 python = "^3.7.12"
