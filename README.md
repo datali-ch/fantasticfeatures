@@ -8,6 +8,10 @@ AMLD 2021, 26.10.2021
 
 # Additional resources: 
 
+## Slides:
+
+Available [here](https://docs.google.com/presentation/d/1dIdAi2nHMopym3lIeML8ZX7Ahz0jlByxnXHCaShmisc/edit?usp=sharing)
+
 ## Datasets:
 
 * [mortality](data/mortality.csv):
